@@ -13,13 +13,12 @@ extension EnvironmentValues {
 
 struct PlayerChromeModifier: ViewModifier {
     @Environment(PlayerService.self) private var player
-    let detailWidth: CGFloat
 
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .bottomTrailing) {
                 PlayerBar()
-                    .frame(width: detailWidth)
+                    .frame(maxWidth: .infinity)
             }
             .overlay(alignment: .trailing) {
                 rightPanel
@@ -93,8 +92,8 @@ struct DestinationsModifier: ViewModifier {
 }
 
 extension View {
-    func playerChrome(detailWidth: CGFloat) -> some View {
-        modifier(PlayerChromeModifier(detailWidth: detailWidth))
+    func playerChrome() -> some View {
+        modifier(PlayerChromeModifier())
     }
 
     /// Pages clear the floating player bar with an explicit trailing

@@ -12,7 +12,7 @@ public struct KumoneApp: App {
     public init() {}
 
     public var body: some Scene {
-        WindowGroup("Kumone", id: "main") {
+        WindowGroup("听澜", id: "main") {
             MainWindow()
                 .environment(player)
                 .environment(account)

@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 env:
-  APP_NAME: Kumone
+  APP_NAME: 听澜
   SPARKLE_VERSION: "2.9.5"
   SIGN_IDENTITY: "Developer ID Application: MOE AI LLC (NCFNX3LJ83)"
 

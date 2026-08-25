@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds Kumone with SwiftPM and wraps the product into a .app bundle.
+# Builds the app with SwiftPM and wraps the product into a .app bundle.
 # Usage: Scripts/build-app.sh [debug|release]
 set -euo pipefail
 
@@ -8,7 +8,9 @@ ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT"
 
 CONF="${1:-debug}"
-APP_NAME="Kumone"
+PRODUCT_NAME="Kumone"
+EXECUTABLE_NAME="Kumone"
+APP_NAME="${APP_NAME:-听澜}"
 BUNDLE_ID="im.missuo.Kumone"
 # Version resolution: environment > version.env > defaults.
 ENV_MARKETING_VERSION="${MARKETING_VERSION:-}"
@@ -33,14 +35,14 @@ for arch in ${ARCHES:-}; do
 done
 
 # ${arr[@]+...} keeps macOS's bash 3.2 happy under set -u with empty arrays
-swift build -c "$CONF" ${ARCH_FLAGS[@]+"${ARCH_FLAGS[@]}"} --product "$APP_NAME"
+swift build -c "$CONF" ${ARCH_FLAGS[@]+"${ARCH_FLAGS[@]}"} --product "$PRODUCT_NAME"
 BIN_PATH="$(swift build -c "$CONF" ${ARCH_FLAGS[@]+"${ARCH_FLAGS[@]}"} --show-bin-path)"
 
 rm -rf "$BUILD_DIR"
 mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
 
-cp "$BIN_PATH/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
-chmod +x "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
+cp "$BIN_PATH/$PRODUCT_NAME" "$APP_BUNDLE/Contents/MacOS/$EXECUTABLE_NAME"
+chmod +x "$APP_BUNDLE/Contents/MacOS/$EXECUTABLE_NAME"
 
 # Embed Sparkle.framework (SwiftPM binary artifact) into Contents/Frameworks.
 SPARKLE_FW="$(find "$ROOT/.build/artifacts" -type d -name 'Sparkle.framework' -path '*macos*' 2>/dev/null | head -n1)"
@@ -98,7 +100,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
         <string>zh-Hans</string>
         <string>en</string>
     </array>
-    <key>CFBundleExecutable</key><string>$APP_NAME</string>
+    <key>CFBundleExecutable</key><string>$EXECUTABLE_NAME</string>
     <key>CFBundleIconName</key><string>AppIcon</string>
     <key>CFBundleIcons</key>
     <dict>
@@ -132,7 +134,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 PLIST
 
 if [ -n "${ARCHES:-}" ]; then
-  echo "Binary architectures: $(lipo -archs "$APP_BUNDLE/Contents/MacOS/$APP_NAME")"
+  echo "Binary architectures: $(lipo -archs "$APP_BUNDLE/Contents/MacOS/$EXECUTABLE_NAME")"
 fi
 
 xattr -cr "$APP_BUNDLE" 2>/dev/null || true

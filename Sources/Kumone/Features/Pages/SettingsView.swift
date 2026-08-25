@@ -60,7 +60,7 @@ struct SettingsView: View {
             }
 
             Section("关于") {
-                LabeledContent("Kumone", value: appVersion)
+                LabeledContent("听澜", value: appVersion)
                 #if os(iOS)
                 Button {
                     checkForUpdates()
