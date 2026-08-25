@@ -10,7 +10,6 @@ permissions:
 env:
   APP_NAME: 听澜
   SPARKLE_VERSION: "2.9.5"
-  SIGN_IDENTITY: "Developer ID Application: MOE AI LLC (NCFNX3LJ83)"
 
 jobs:
   release:
@@ -33,57 +32,20 @@ jobs:
           echo "Release notes for $VERSION:"
           cat "$RUNNER_TEMP/notes.md"
 
-      - name: Import signing certificate
-        env:
-          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
-          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-        run: |
-          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
-          KEYCHAIN_PASSWORD="$(uuidgen)"
-          echo "$MACOS_CERTIFICATE_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" \
-            -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: \
-            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
-          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
-          rm -f "$RUNNER_TEMP/cert.p12"
-
       - name: Build app (universal)
         run: |
           MARKETING_VERSION="$VERSION" BUILD_NUMBER="$BUILD_NUMBER" \
             ARCHES="arm64 x86_64" \
             Scripts/build-app.sh release
 
-      - name: Codesign (Developer ID, hardened runtime)
-        run: |
-          APP=".build/app/$APP_NAME.app"
-          FW="$APP/Contents/Frameworks/Sparkle.framework"
-          codesign -f -o runtime --preserve-metadata=entitlements \
-            -s "$SIGN_IDENTITY" "$FW/Versions/B/XPCServices/Downloader.xpc"
-          codesign -f -o runtime --preserve-metadata=entitlements \
-            -s "$SIGN_IDENTITY" "$FW/Versions/B/XPCServices/Installer.xpc"
-          codesign -f -o runtime -s "$SIGN_IDENTITY" "$FW/Versions/B/Autoupdate"
-          codesign -f -o runtime -s "$SIGN_IDENTITY" "$FW/Versions/B/Updater.app"
-          codesign -f -o runtime -s "$SIGN_IDENTITY" "$FW"
-          codesign -f -o runtime -s "$SIGN_IDENTITY" "$APP"
-          codesign --verify --deep --strict "$APP"
-
-      - name: Notarize and staple
+      - name: Verify Sparkle release key
         env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
-          APP=".build/app/$APP_NAME.app"
-          ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/notarize.zip"
-          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
-            --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
-            --password "$APPLE_APP_PASSWORD" --wait
-          xcrun stapler staple "$APP"
-          spctl -a -vv --type execute "$APP"
+          if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
+            echo "::error::Add the SPARKLE_PRIVATE_KEY repository secret before publishing a release."
+            exit 1
+          fi
 
       - name: Package and generate appcast
         env:

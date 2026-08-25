@@ -118,7 +118,7 @@ struct HomeView: View {
                 ErrorStateView(message: message) {
                     Task { await model.reload(loggedIn: account.isLoggedIn) }
                 }
-                .frame(minHeight: 400)
+                .frame(maxWidth: .infinity, minHeight: 400)
             case .loaded:
                 loadedBody
             }

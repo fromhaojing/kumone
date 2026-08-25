@@ -16,6 +16,7 @@ struct PlayerBar: View {
             }
             .padding(.horizontal, 14)
         }
+        .frame(maxWidth: .infinity)
         .frame(height: Theme.Layout.playerBarHeight)
         .compatGlass(interactive: true, in: Capsule())
         .overlay(Capsule().strokeBorder(.primary.opacity(0.06), lineWidth: 0.5))

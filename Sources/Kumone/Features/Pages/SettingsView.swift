@@ -122,7 +122,7 @@ struct SettingsView: View {
 
     private var cacheDirectory: URL {
         FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("im.missuo.Kumone/images", isDirectory: true)
+            .appendingPathComponent("com.fromhaojing.tinglan/images", isDirectory: true)
     }
 
     private func updateCacheSize() {

@@ -22,7 +22,7 @@ enum NeteaseAPIError: LocalizedError {
 final class NeteaseClient: @unchecked Sendable {
     static let shared = NeteaseClient()
 
-    private static let log = Logger(subsystem: "im.missuo.kumone", category: "api")
+    private static let log = Logger(subsystem: "com.fromhaojing.tinglan", category: "api")
     private static let userAgent =
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 

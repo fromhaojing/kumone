@@ -11,6 +11,10 @@ struct MainWindow: View {
 
     @State private var selection: SidebarItem = .home
     @State private var path = NavigationPath()
+    @State private var searchText = ""
+    @State private var searchPrompt = "搜索歌曲、歌手、专辑、歌单"
+    @State private var placeholderQuery = ""
+    @State private var isSearchVisible = false
     @State private var showLogin = false
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var visibilityBeforeNowPlaying: NavigationSplitViewVisibility?
@@ -21,22 +25,30 @@ struct MainWindow: View {
 
     var body: some View {
         splitContent
+        #if os(macOS)
         .toolbar {
-            if #available(macOS 26.0, iOS 26.0, *) {
+            if #available(macOS 26.0, *) {
                 ToolbarItem(placement: .primaryAction) {
-                    SearchFieldView { query in
-                        path.append(Destination.search(query))
-                    }
+                    MacSearchField(
+                        text: $searchText,
+                        prompt: searchPrompt,
+                        onSubmit: submitSearch
+                    )
+                    .frame(width: 320)
                 }
                 .sharedBackgroundVisibility(.hidden)
             } else {
                 ToolbarItem(placement: .primaryAction) {
-                    SearchFieldView { query in
-                        path.append(Destination.search(query))
-                    }
+                    MacSearchField(
+                        text: $searchText,
+                        prompt: searchPrompt,
+                        onSubmit: submitSearch
+                    )
+                    .frame(width: 320)
                 }
             }
         }
+        #endif
         #if os(macOS)
         // Immersive now-playing page: hide the whole window toolbar
         // (sidebar toggle, navigation title, search field).
@@ -46,6 +58,12 @@ struct MainWindow: View {
         .task {
             DesktopLyricsController.shared.sync(with: settings.showDesktopLyrics)
             await account.bootstrap()
+        }
+        .task {
+            if let keyword = try? await NeteaseAPI.searchDefaultKeyword(), !keyword.isEmpty {
+                searchPrompt = keyword
+                placeholderQuery = keyword
+            }
         }
         .onChange(of: settings.showDesktopLyrics) {
             DesktopLyricsController.shared.sync(with: settings.showDesktopLyrics)
@@ -97,7 +115,8 @@ struct MainWindow: View {
         #if os(macOS)
         MacSplitView(
             isSidebarCollapsed: $isSidebarCollapsed,
-            sidebarWidth: Theme.Layout.sidebarWidth
+            sidebarWidth: Theme.Layout.sidebarWidth,
+            appearance: settings.appearance
         ) {
             hostedContent(
                 SidebarView(selection: $selection, showLogin: $showLogin)
@@ -105,6 +124,7 @@ struct MainWindow: View {
         } detail: {
             hostedContent(detailStack.playerChrome())
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .ignoresSafeArea(.container, edges: .top)
         #else
         NavigationSplitView(columnVisibility: $columnVisibility) {
@@ -134,14 +154,41 @@ struct MainWindow: View {
     }
     #endif
 
+    @ViewBuilder
     private var detailStack: some View {
+        #if os(macOS)
+        detailNavigationStack
+        #else
+        detailNavigationStack
+            .searchable(text: $searchText, prompt: Text(searchPrompt))
+            .onSubmit(of: .search) {
+                submitSearch()
+            }
+        #endif
+    }
+
+    private var detailNavigationStack: some View {
         NavigationStack(path: $path) {
             rootView
                 .playerContentInset()
-                .appDestinations()
+                .appDestinations(
+                    searchText: $searchText,
+                    isSearchVisible: $isSearchVisible
+                )
         }
         .onChange(of: selection) {
             path = NavigationPath()
+            isSearchVisible = false
+        }
+    }
+
+    private func submitSearch() {
+        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let query = trimmed.isEmpty ? placeholderQuery : trimmed
+        guard !query.isEmpty else { return }
+        searchText = query
+        if !isSearchVisible {
+            path.append(Destination.search(query))
         }
     }
 
@@ -237,6 +284,7 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
     let sidebarController: SidebarMaterialController<Sidebar>
     let detailHost: NSHostingController<Detail>
     let sidebarItem: NSSplitViewItem
+    private var appAppearance: AppAppearance
 
     var sidebarHost: NSHostingController<Sidebar> {
         sidebarController.host
@@ -246,10 +294,13 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
         sidebar: Sidebar,
         detail: Detail,
         sidebarWidth: CGFloat,
+        appearance: AppAppearance,
         collapsed: Bool
     ) {
+        appAppearance = appearance
         sidebarController = SidebarMaterialController(rootView: sidebar)
         detailHost = NSHostingController(rootView: detail)
+        detailHost.sizingOptions = []
         sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarController)
         super.init(nibName: nil, bundle: nil)
 
@@ -290,6 +341,12 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
         sidebarItem.maximumThickness = width
     }
 
+    func setAppearance(_ appearance: AppAppearance) {
+        guard appAppearance != appearance else { return }
+        appAppearance = appearance
+        configureWindow()
+    }
+
     func setCollapsed(_ collapsed: Bool) {
         guard sidebarItem.isCollapsed != collapsed else { return }
         toggleSidebar(nil)
@@ -302,6 +359,14 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
         // native translucent background all the way to the top.
         window.styleMask.insert(.fullSizeContentView)
         window.titlebarAppearsTransparent = true
+        switch appAppearance {
+        case .auto:
+            window.appearance = nil
+        case .light:
+            window.appearance = NSAppearance(named: .aqua)
+        case .dark:
+            window.appearance = NSAppearance(named: .darkAqua)
+        }
     }
 
     func installToolbarItems() {
@@ -372,17 +437,20 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
 private struct MacSplitView<Sidebar: View, Detail: View>: NSViewControllerRepresentable {
     @Binding var isSidebarCollapsed: Bool
     let sidebarWidth: CGFloat
+    let appearance: AppAppearance
     let sidebar: Sidebar
     let detail: Detail
 
     init(
         isSidebarCollapsed: Binding<Bool>,
         sidebarWidth: CGFloat,
+        appearance: AppAppearance,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) {
         _isSidebarCollapsed = isSidebarCollapsed
         self.sidebarWidth = sidebarWidth
+        self.appearance = appearance
         self.sidebar = sidebar()
         self.detail = detail()
     }
@@ -398,6 +466,7 @@ private struct MacSplitView<Sidebar: View, Detail: View>: NSViewControllerRepres
             sidebar: sidebar,
             detail: detail,
             sidebarWidth: sidebarWidth,
+            appearance: appearance,
             collapsed: isSidebarCollapsed
         )
         context.coordinator.observe(controller)
@@ -412,11 +481,26 @@ private struct MacSplitView<Sidebar: View, Detail: View>: NSViewControllerRepres
         controller.sidebarHost.rootView = sidebar
         controller.detailHost.rootView = detail
         controller.setSidebarWidth(sidebarWidth)
+        controller.setAppearance(appearance)
         controller.setCollapsed(isSidebarCollapsed)
 
         DispatchQueue.main.async { [weak controller] in
             controller?.installToolbarItems()
         }
+    }
+
+    func sizeThatFits(
+        _ proposal: ProposedViewSize,
+        nsViewController: HostedSplitController<Sidebar, Detail>,
+        context: Context
+    ) -> CGSize? {
+        guard let width = proposal.width, let height = proposal.height else {
+            return nil
+        }
+
+        // The split view is the window's root layout. Its size must come from
+        // the window, not from the current detail view's ideal content size.
+        return CGSize(width: width, height: height)
     }
 
     static func dismantleNSViewController(
@@ -459,50 +543,68 @@ private struct MacSplitView<Sidebar: View, Detail: View>: NSViewControllerRepres
         }
     }
 }
-#endif
 
-// MARK: - Search field
+@MainActor
+private struct MacSearchField: NSViewRepresentable {
+    @Binding var text: String
+    let prompt: String
+    let onSubmit: () -> Void
 
-struct SearchFieldView: View {
-    let onSubmit: (String) -> Void
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
 
-    @State private var text = ""
-    @State private var placeholder = "搜索音乐、歌手、专辑"
-    @FocusState private var focused: Bool
+    func makeNSView(context: Context) -> NSSearchField {
+        let field = NSSearchField()
+        field.delegate = context.coordinator
+        field.controlSize = .regular
+        field.bezelStyle = .roundedBezel
+        field.placeholderString = prompt
+        field.stringValue = text
+        return field
+    }
 
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
-            TextField(placeholder, text: $text)
-                .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
-                .focused($focused)
-                .frame(width: 168)
-                .onSubmit {
-                    let query = text.trimmingCharacters(in: .whitespaces)
-                    let effective = query.isEmpty ? placeholderQuery : query
-                    guard !effective.isEmpty else { return }
-                    onSubmit(effective)
-                    focused = false
-                }
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(.primary.opacity(0.05), in: Capsule())
-        .overlay(Capsule().strokeBorder(.primary.opacity(focused ? 0.18 : 0.08), lineWidth: 1))
-        .animation(AppAnimation.quick, value: focused)
-        .task {
-            if let keyword = try? await NeteaseAPI.searchDefaultKeyword(), !keyword.isEmpty {
-                placeholder = keyword
-                placeholderQuery = keyword
-            }
+    func updateNSView(_ field: NSSearchField, context: Context) {
+        context.coordinator.parent = self
+        field.placeholderString = prompt
+        if field.stringValue != text {
+            field.stringValue = text
         }
     }
 
-    @State private var placeholderQuery = ""
+    @MainActor
+    final class Coordinator: NSObject, NSSearchFieldDelegate {
+        var parent: MacSearchField
+
+        init(parent: MacSearchField) {
+            self.parent = parent
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSSearchField else { return }
+            if parent.text != field.stringValue {
+                parent.text = field.stringValue
+            }
+        }
+
+        func control(
+            _ control: NSControl,
+            textView: NSTextView,
+            doCommandBy commandSelector: Selector
+        ) -> Bool {
+            guard commandSelector == #selector(NSResponder.insertNewline(_:)) else {
+                return false
+            }
+            if let field = control as? NSSearchField {
+                parent.text = field.stringValue
+            }
+            parent.onSubmit()
+            control.window?.makeFirstResponder(nil)
+            return true
+        }
+    }
 }
+#endif
 
 // MARK: - Toast
 

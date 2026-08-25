@@ -70,13 +70,23 @@ struct SearchView: View {
     let initialQuery: String
 
     @State private var model: SearchViewModel
-    @State private var searchText: String = ""
+    @State private var localSearchText: String
+    private let externalSearchText: Binding<String>?
     @Environment(PlayerService.self) private var player
 
-    init(query: String) {
+    init(query: String, searchText: Binding<String>? = nil) {
         self.initialQuery = query
+        self.externalSearchText = searchText
         _model = State(initialValue: SearchViewModel(query: query))
-        _searchText = State(initialValue: query)
+        _localSearchText = State(initialValue: query)
+    }
+
+    private var searchTextBinding: Binding<String> {
+        externalSearchText ?? $localSearchText
+    }
+
+    private var searchText: String {
+        searchTextBinding.wrappedValue
     }
 
     var body: some View {
@@ -105,7 +115,10 @@ struct SearchView: View {
                 PlayerClearanceSpacer()
             }
         }
-        .searchable(text: $searchText, prompt: "搜索歌曲、歌手、专辑、歌单")
+        .modifier(SearchFieldModifier(
+            text: searchTextBinding,
+            isEnabled: externalSearchText == nil
+        ))
         .onSubmit(of: .search) {
             model.setQuery(searchText)
             Task { await model.load(tab: model.tab) }
@@ -253,6 +266,20 @@ struct SearchView: View {
                 )
             }
             .buttonStyle(.plain)
+        }
+    }
+}
+
+private struct SearchFieldModifier: ViewModifier {
+    @Binding var text: String
+    let isEnabled: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.searchable(text: $text, prompt: "搜索歌曲、歌手、专辑、歌单")
+        } else {
+            content
         }
     }
 }

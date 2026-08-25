@@ -11,18 +11,18 @@ CONF="${1:-debug}"
 PRODUCT_NAME="Kumone"
 EXECUTABLE_NAME="Kumone"
 APP_NAME="${APP_NAME:-听澜}"
-BUNDLE_ID="im.missuo.Kumone"
+BUNDLE_ID="com.fromhaojing.tinglan"
 # Version resolution: environment > version.env > defaults.
 ENV_MARKETING_VERSION="${MARKETING_VERSION:-}"
 ENV_BUILD_NUMBER="${BUILD_NUMBER:-}"
-MARKETING_VERSION="0.1.0"
+MARKETING_VERSION="1.0.0"
 BUILD_NUMBER="1"
 [ -f "$ROOT/version.env" ] && source "$ROOT/version.env"
 [ -n "$ENV_MARKETING_VERSION" ] && MARKETING_VERSION="$ENV_MARKETING_VERSION"
 [ -n "$ENV_BUILD_NUMBER" ] && BUILD_NUMBER="$ENV_BUILD_NUMBER"
 
-SPARKLE_FEED_URL="https://github.com/missuo/kumone/releases/latest/download/appcast.xml"
-SPARKLE_PUBLIC_ED_KEY="RHEhllstUuuVrVDCPGrbhg/8LivSzpuZB9X3u3xdV5o="
+SPARKLE_FEED_URL="https://github.com/fromhaojing/kumone/releases/latest/download/appcast.xml"
+SPARKLE_PUBLIC_ED_KEY="rLZS1aHaiEQF6xYhnp2JCmh/m/ctxmYlEa2vIqOoz1I="
 
 BUILD_DIR="$ROOT/.build/app"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
@@ -118,7 +118,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
     <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
     <key>LSApplicationCategoryType</key><string>public.app-category.music</string>
     <key>LSMinimumSystemVersion</key><string>15.0</string>
-    <key>NSHumanReadableCopyright</key><string>© 2026 missuo</string>
+    <key>NSHumanReadableCopyright</key><string>© 2026 好景</string>
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSAppTransportSecurity</key>

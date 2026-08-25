@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:kumone}",
+      "name": "Debug Kumone",
+      "target": "Kumone",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug Kumone"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:kumone}",
+      "name": "Release Kumone",
+      "target": "Kumone",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release Kumone"
+    }
+  ]
+}

@@ -65,6 +65,7 @@ final class SettingsManager {
         static let fmMode = "settings.fmMode"
         static let unblock = "settings.enableUnblock"
         static let desktopLyrics = "settings.showDesktopLyrics"
+        static let ownershipMigration = "migration.fromMissuoIdentity.v1"
     }
 
     var audioQuality: AudioQuality {
@@ -91,10 +92,38 @@ final class SettingsManager {
 
     private init() {
         let defaults = UserDefaults.standard
+        Self.migrateLegacyPreferencesIfNeeded(into: defaults)
         audioQuality = defaults.string(forKey: Keys.quality).flatMap(AudioQuality.init) ?? .exhigh
         appearance = defaults.string(forKey: Keys.appearance).flatMap(AppAppearance.init) ?? .auto
         showLyricsTranslation = defaults.object(forKey: Keys.showTranslation) as? Bool ?? true
         enableUnblock = defaults.object(forKey: Keys.unblock) as? Bool ?? true
         showDesktopLyrics = defaults.object(forKey: Keys.desktopLyrics) as? Bool ?? false
+    }
+
+    private static func migrateLegacyPreferencesIfNeeded(into defaults: UserDefaults) {
+        guard !defaults.bool(forKey: Keys.ownershipMigration) else { return }
+
+        let keys = [
+            Keys.quality,
+            Keys.appearance,
+            Keys.showTranslation,
+            Keys.volume,
+            Keys.fmMode,
+            Keys.unblock,
+            Keys.desktopLyrics,
+            "auth.lastCookieRefresh",
+        ]
+        let legacyDomains = ["im.missuo.Kumone", "sb.moe.kumone"]
+
+        for domain in legacyDomains {
+            guard let values = defaults.persistentDomain(forName: domain) else { continue }
+            for key in keys where defaults.object(forKey: key) == nil {
+                if let value = values[key] {
+                    defaults.set(value, forKey: key)
+                }
+            }
+        }
+
+        defaults.set(true, forKey: Keys.ownershipMigration)
     }
 }

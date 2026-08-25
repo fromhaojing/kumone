@@ -11,7 +11,7 @@ import os.log
 /// 2. kuwo   — fuzzy search + duration match (±5 s), then convert_url
 /// 3. kugou  — fuzzy search + duration match, tracker URL
 enum UnblockService {
-    private static let log = Logger(subsystem: "im.missuo.kumone", category: "unblock")
+    private static let log = Logger(subsystem: "com.fromhaojing.tinglan", category: "unblock")
 
     struct Resolved {
         let url: URL

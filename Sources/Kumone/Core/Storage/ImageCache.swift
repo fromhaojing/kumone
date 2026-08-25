@@ -14,7 +14,7 @@ actor ImageCache {
         memory.countLimit = 300
         memory.totalCostLimit = 64 * 1024 * 1024
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        diskURL = caches.appendingPathComponent("im.missuo.Kumone/images", isDirectory: true)
+        diskURL = caches.appendingPathComponent("com.fromhaojing.tinglan/images", isDirectory: true)
         try? FileManager.default.createDirectory(at: diskURL, withIntermediateDirectories: true)
     }
 

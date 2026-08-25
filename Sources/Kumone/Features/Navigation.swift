@@ -16,6 +16,7 @@ struct PlayerChromeModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .overlay(alignment: .bottomTrailing) {
                 PlayerBar()
                     .frame(maxWidth: .infinity)
@@ -68,6 +69,9 @@ enum Destination: Hashable {
 
 /// Registers all shared navigation destinations on a stack.
 struct DestinationsModifier: ViewModifier {
+    var searchText: Binding<String>?
+    var isSearchVisible: Binding<Bool>?
+
     func body(content: Content) -> some View {
         content.navigationDestination(for: Destination.self) { destination in
             Group {
@@ -83,7 +87,13 @@ struct DestinationsModifier: ViewModifier {
                 case .toplists:
                     ToplistsView()
                 case .search(let query):
-                    SearchView(query: query)
+                    SearchView(query: query, searchText: searchText)
+                        .onAppear {
+                            isSearchVisible?.wrappedValue = true
+                        }
+                        .onDisappear {
+                            isSearchVisible?.wrappedValue = false
+                        }
                 }
             }
             .playerContentInset()
@@ -104,7 +114,17 @@ extension View {
     }
 
     func appDestinations() -> some View {
-        modifier(DestinationsModifier())
+        modifier(DestinationsModifier(searchText: nil, isSearchVisible: nil))
+    }
+
+    func appDestinations(
+        searchText: Binding<String>,
+        isSearchVisible: Binding<Bool>
+    ) -> some View {
+        modifier(DestinationsModifier(
+            searchText: searchText,
+            isSearchVisible: isSearchVisible
+        ))
     }
 }
 
