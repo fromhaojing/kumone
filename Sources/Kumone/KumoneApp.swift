@@ -20,6 +20,7 @@ public struct KumoneApp: App {
                 .environmentObject(toasts)
                 .tint(Theme.accent)
                 .preferredColorScheme(settings.appearance.colorScheme)
+                .focusEffectDisabled()
                 .frame(minWidth: player.showNowPlaying
                            ? Theme.Layout.minWindowWidthSidebarCollapsed
                            : Theme.Layout.minWindowWidth,
@@ -79,6 +80,7 @@ public struct KumoneApp: App {
                 .environmentObject(settings)
                 .tint(Theme.accent)
                 .preferredColorScheme(settings.appearance.colorScheme)
+                .focusEffectDisabled()
         }
     }
 }

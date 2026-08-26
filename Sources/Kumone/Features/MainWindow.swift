@@ -152,6 +152,7 @@ struct MainWindow: View {
             .environment(\.openLogin, { showLogin = true })
             .tint(Theme.accent)
             .preferredColorScheme(settings.appearance.colorScheme)
+            .focusEffectDisabled()
     }
     #endif
 
