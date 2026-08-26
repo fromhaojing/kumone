@@ -12,7 +12,7 @@ extension EnvironmentValues {
 }
 
 struct PlayerChromeModifier: ViewModifier {
-    @Environment(PlayerService.self) private var player
+    @EnvironmentObject private var player: PlayerService
 
     func body(content: Content) -> some View {
         content
@@ -64,6 +64,9 @@ enum Destination: Hashable {
     case artist(Int)
     case daily
     case toplists
+    case recents
+    case collections
+    case cloud
     case search(String)
 }
 
@@ -86,6 +89,12 @@ struct DestinationsModifier: ViewModifier {
                     DailySongsView()
                 case .toplists:
                     ToplistsView()
+                case .recents:
+                    RecentsView()
+                case .collections:
+                    CollectionsView()
+                case .cloud:
+                    CloudView()
                 case .search(let query):
                     SearchView(query: query, searchText: searchText)
                         .onAppear {

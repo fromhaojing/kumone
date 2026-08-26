@@ -1,14 +1,11 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(SettingsManager.self) private var settings
-    @Environment(AccountStore.self) private var account
+    @EnvironmentObject private var settings: SettingsManager
+    @EnvironmentObject private var account: AccountStore
     @State private var cacheSize: String = String(localized: "计算中…")
-    @State private var isCheckingUpdate = false
-    @State private var latestRelease: ReleaseChecker.Release?
 
     var body: some View {
-        @Bindable var settings = settings
         Form {
             Section("播放") {
                 Picker("音质", selection: $settings.audioQuality) {
@@ -31,7 +28,18 @@ struct SettingsView: View {
                         Text(appearance.displayName).tag(appearance)
                     }
                 }
+                #if os(iOS)
+                Picker("播放页模式", selection: $settings.nowPlayingMode) {
+                    ForEach(NowPlayingMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
+                }
+                #endif
                 Toggle("显示歌词翻译", isOn: $settings.showLyricsTranslation)
+                Toggle("显示日文歌词罗马音", isOn: $settings.showLyricsRomaji)
+                Text("日文歌词上方显示罗马音，缺少官方罗马音时自动生成读音")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 #if os(macOS)
                 Toggle("桌面歌词", isOn: $settings.showDesktopLyrics)
                 Text("在屏幕上悬浮显示当前歌词，可拖动调整位置")
@@ -63,28 +71,13 @@ struct SettingsView: View {
                 LabeledContent("听澜", value: appVersion)
                 #if os(iOS)
                 Button {
-                    checkForUpdates()
+                    IOSUpdater.shared.check(interactive: true)
                 } label: {
-                    HStack {
-                        Text("检查更新")
-                        Spacer()
-                        if isCheckingUpdate {
-                            ProgressView().controlSize(.small)
-                        } else if let latest = latestRelease {
-                            Text(String(localized: "发现新版本 \(latest.version)"))
-                                .foregroundStyle(Theme.accent)
-                        }
-                    }
+                    Label("检查更新", systemImage: "arrow.triangle.2.circlepath")
                 }
-                .disabled(isCheckingUpdate)
-                if let latest = latestRelease {
-                    Link(destination: latest.url) {
-                        Label("前往下载", systemImage: "arrow.down.circle")
-                    }
-                    Text("iOS 无法自动更新：下载新版 IPA 后用侧载工具重新安装即可，登录状态和设置会保留")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Text("装有 TrollStore（巨魔）可在应用内一键自动安装；否则可下载 IPA 用侧载工具重装（登录状态与设置保留）")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 #endif
                 Text("网易云音乐第三方客户端 · 数据来自网易云音乐")
                     .font(.caption)
@@ -96,24 +89,6 @@ struct SettingsView: View {
         .frame(width: 440, height: 480)
         #endif
         .task { updateCacheSize() }
-    }
-
-    private func checkForUpdates() {
-        isCheckingUpdate = true
-        Task {
-            defer { isCheckingUpdate = false }
-            do {
-                let latest = try await ReleaseChecker.latest()
-                if ReleaseChecker.isNewer(latest.version, than: ReleaseChecker.currentVersion) {
-                    latestRelease = latest
-                } else {
-                    latestRelease = nil
-                    ToastCenter.shared.show(String(localized: "已是最新版本"))
-                }
-            } catch {
-                ToastCenter.shared.show(error.localizedDescription)
-            }
-        }
     }
 
     private var appVersion: String {

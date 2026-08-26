@@ -52,15 +52,34 @@ enum AppAppearance: String, CaseIterable, Identifiable {
     }
 }
 
+#if os(iOS)
+enum NowPlayingMode: String, CaseIterable, Identifiable {
+    case classic
+    case immersive
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .classic: return String(localized: "经典模式")
+        case .immersive: return String(localized: "沉浸模式")
+        }
+    }
+}
+#endif
+
 @MainActor
-@Observable
-final class SettingsManager {
+final class SettingsManager: ObservableObject {
     static let shared = SettingsManager()
 
     private enum Keys {
         static let quality = "settings.audioQuality"
         static let appearance = "settings.appearance"
+        #if os(iOS)
+        static let nowPlayingMode = "settings.nowPlayingMode"
+        #endif
         static let showTranslation = "settings.showLyricsTranslation"
+        static let showRomaji = "settings.showLyricsRomaji"
         static let volume = "settings.volume"
         static let fmMode = "settings.fmMode"
         static let unblock = "settings.enableUnblock"
@@ -68,25 +87,36 @@ final class SettingsManager {
         static let ownershipMigration = "migration.fromMissuoIdentity.v1"
     }
 
-    var audioQuality: AudioQuality {
+    @Published var audioQuality: AudioQuality {
         didSet { UserDefaults.standard.set(audioQuality.rawValue, forKey: Keys.quality) }
     }
 
-    var appearance: AppAppearance {
+    @Published var appearance: AppAppearance {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: Keys.appearance) }
     }
 
-    var showLyricsTranslation: Bool {
+    #if os(iOS)
+    @Published var nowPlayingMode: NowPlayingMode {
+        didSet { UserDefaults.standard.set(nowPlayingMode.rawValue, forKey: Keys.nowPlayingMode) }
+    }
+    #endif
+
+    @Published var showLyricsTranslation: Bool {
         didSet { UserDefaults.standard.set(showLyricsTranslation, forKey: Keys.showTranslation) }
     }
 
+    /// Romaji line above Japanese lyrics.
+    @Published var showLyricsRomaji: Bool {
+        didSet { UserDefaults.standard.set(showLyricsRomaji, forKey: Keys.showRomaji) }
+    }
+
     /// Resolve gray tracks from third-party sources (UnblockNeteaseMusic-style).
-    var enableUnblock: Bool {
+    @Published var enableUnblock: Bool {
         didSet { UserDefaults.standard.set(enableUnblock, forKey: Keys.unblock) }
     }
 
     /// Floating desktop lyrics window (LyricsX-style).
-    var showDesktopLyrics: Bool {
+    @Published var showDesktopLyrics: Bool {
         didSet { UserDefaults.standard.set(showDesktopLyrics, forKey: Keys.desktopLyrics) }
     }
 
@@ -95,7 +125,11 @@ final class SettingsManager {
         Self.migrateLegacyPreferencesIfNeeded(into: defaults)
         audioQuality = defaults.string(forKey: Keys.quality).flatMap(AudioQuality.init) ?? .exhigh
         appearance = defaults.string(forKey: Keys.appearance).flatMap(AppAppearance.init) ?? .auto
+        #if os(iOS)
+        nowPlayingMode = defaults.string(forKey: Keys.nowPlayingMode).flatMap(NowPlayingMode.init) ?? .immersive
+        #endif
         showLyricsTranslation = defaults.object(forKey: Keys.showTranslation) as? Bool ?? true
+        showLyricsRomaji = defaults.object(forKey: Keys.showRomaji) as? Bool ?? false
         enableUnblock = defaults.object(forKey: Keys.unblock) as? Bool ?? true
         showDesktopLyrics = defaults.object(forKey: Keys.desktopLyrics) as? Bool ?? false
     }
