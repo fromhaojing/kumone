@@ -13,9 +13,11 @@ counterparts. 段落格式：`## <版本号> - <日期>`，条目必须写成单
 - Home cards now use value-based navigation, so switching sidebar sections after opening Daily Recommendations, a playlist, an album, or an artist correctly returns to the selected section
 - On iOS 16 and 17, tapping the mini player now opens the full-screen Now Playing page with a bottom slide-up transition
 - macOS buttons no longer show an unwanted focus outline after being clicked; text-field focus feedback remains unchanged
+- The macOS Check for Updates menu item now displays its update icon
 - 推荐页卡片改为值驱动导航；打开每日推荐、歌单、专辑或歌手后再切换侧边栏，可以正确进入所选页面
 - iOS 16 和 17 上点击迷你播放器现在可以通过底部上滑动画正常打开全屏播放页
 - macOS 按钮点击后不再显示多余的焦点外框，文本输入框的焦点提示保持不变
+- macOS 的“检查更新”菜单项现在会正常显示更新图标
 
 ## 1.1.1 - 2026-08-26
 

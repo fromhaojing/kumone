@@ -32,8 +32,10 @@ struct CheckForUpdatesButton: View {
     @ObservedObject private var updater = UpdaterManager.shared
 
     var body: some View {
-        Button("检查更新…") {
+        Button {
             updater.checkForUpdates()
+        } label: {
+            Label("检查更新…", systemImage: "arrow.triangle.2.circlepath")
         }
         .disabled(!updater.canCheckForUpdates)
     }
