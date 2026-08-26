@@ -12,7 +12,7 @@ final class SearchViewModel: ObservableObject {
         var id: String { rawValue }
     }
 
-    var query: String
+    @Published var query: String
     @Published var tab: Tab = .all
     @Published var songs: [Track] = []
     @Published var artists: [ArtistSummary] = []
@@ -91,7 +91,7 @@ struct SearchView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+                if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Picker("", selection: $model.tab) {
                         ForEach(SearchViewModel.Tab.allCases) { tab in
                             Text(LocalizedStringKey(tab.rawValue)).tag(tab)
@@ -131,7 +131,7 @@ struct SearchView: View {
                 }
             }
         }
-        .navigationTitle(searchText.isEmpty ? "搜索" : String(localized: "搜索：\(searchText)"))
+        .navigationTitle(model.query.isEmpty ? "搜索" : String(localized: "搜索：\(model.query)"))
         .task(id: model.tab) {
             await model.load(tab: model.tab)
         }

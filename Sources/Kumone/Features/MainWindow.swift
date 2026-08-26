@@ -15,6 +15,7 @@ struct MainWindow: View {
     @State private var searchPrompt = "搜索歌曲、歌手、专辑、歌单"
     @State private var placeholderQuery = ""
     @State private var isSearchVisible = false
+    @State private var hasSearchDestination = false
     @State private var showLogin = false
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var visibilityBeforeNowPlaying: NavigationSplitViewVisibility?
@@ -178,7 +179,17 @@ struct MainWindow: View {
         }
         .onChange(of: selection) { _ in
             path = NavigationPath()
+            if hasSearchDestination {
+                searchText = ""
+                hasSearchDestination = false
+            }
             isSearchVisible = false
+        }
+        .onChange(of: path.count) { count in
+            guard count == 0, hasSearchDestination else { return }
+            searchText = ""
+            isSearchVisible = false
+            hasSearchDestination = false
         }
     }
 
@@ -188,6 +199,7 @@ struct MainWindow: View {
         guard !query.isEmpty else { return }
         searchText = query
         if !isSearchVisible {
+            hasSearchDestination = true
             path.append(Destination.search(query))
         }
     }

@@ -6,6 +6,13 @@
 section the English bullets come first, followed by their Simplified Chinese
 counterparts. 段落格式：`## <版本号> - <日期>`，条目必须写成单行。
 
+## 1.1.1 - 2026-08-26
+
+### Fixed / 修复
+
+- Pressing Return on the default search suggestion now performs the search on the first attempt, and returning from search to Home clears the search field
+- 首次打开应用后直接对默认搜索词按回车即可正常搜索；从搜索页返回推荐页时会清空搜索框
+
 ## 1.1.0 - 2026-08-26
 
 ### Added / 新增
