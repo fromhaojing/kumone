@@ -95,20 +95,6 @@ jobs:
           rm -f "dist/$ASSET_NAME-$VERSION.html"
           cat dist/appcast.xml
 
-      - name: Build unsigned iOS IPA
-        run: |
-          xcodebuild -workspace ios/KumoneIOS.xcworkspace -scheme KumoneIOS \
-            -configuration Release -destination 'generic/platform=iOS' \
-            -derivedDataPath "$RUNNER_TEMP/ios-dd" \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
-            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
-            build
-          APP="$RUNNER_TEMP/ios-dd/Build/Products/Release-iphoneos/KumoneIOS.app"
-          mkdir -p "$RUNNER_TEMP/payload/Payload"
-          cp -R "$APP" "$RUNNER_TEMP/payload/Payload/"
-          (cd "$RUNNER_TEMP/payload" && zip -qry "$GITHUB_WORKSPACE/dist/$ASSET_NAME-iOS-$VERSION.ipa" Payload)
-          ls -la dist/
-
       - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -116,7 +102,6 @@ jobs:
           TAG="v$VERSION"
           ASSETS=(
             "dist/$ASSET_NAME-$VERSION.dmg"
-            "dist/$ASSET_NAME-iOS-$VERSION.ipa"
             "dist/appcast.xml"
           )
 
@@ -125,9 +110,10 @@ jobs:
               --title "$APP_NAME $VERSION" \
               --notes-file "$RUNNER_TEMP/notes.md"
 
-            # Clean up assets whose Chinese prefix GitHub stripped on older runs.
+            # Clean up malformed legacy names and iOS artifacts from older runs.
             gh release delete-asset --yes "$TAG" -- "-$VERSION.dmg" || true
             gh release delete-asset --yes "$TAG" -- "-iOS-$VERSION.ipa" || true
+            gh release delete-asset "$TAG" "$ASSET_NAME-iOS-$VERSION.ipa" --yes || true
             gh release upload "$TAG" --clobber "${ASSETS[@]}"
           else
             gh release create "$TAG" \

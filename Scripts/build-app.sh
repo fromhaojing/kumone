@@ -21,7 +21,7 @@ BUILD_NUMBER="1"
 [ -n "$ENV_MARKETING_VERSION" ] && MARKETING_VERSION="$ENV_MARKETING_VERSION"
 [ -n "$ENV_BUILD_NUMBER" ] && BUILD_NUMBER="$ENV_BUILD_NUMBER"
 
-SPARKLE_FEED_URL="https://github.com/fromhaojing/kumone/releases/latest/download/appcast.xml"
+SPARKLE_FEED_URL="https://github.com/fromhaojing/Tinglan/releases/latest/download/appcast.xml"
 SPARKLE_PUBLIC_ED_KEY="rLZS1aHaiEQF6xYhnp2JCmh/m/ctxmYlEa2vIqOoz1I="
 
 BUILD_DIR="$ROOT/.build/app"
