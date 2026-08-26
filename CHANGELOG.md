@@ -6,6 +6,15 @@
 section the English bullets come first, followed by their Simplified Chinese
 counterparts. 段落格式：`## <版本号> - <日期>`，条目必须写成单行。
 
+## Unreleased
+
+### Fixed / 修复
+
+- Home cards now use value-based navigation, so switching sidebar sections after opening Daily Recommendations, a playlist, an album, or an artist correctly returns to the selected section
+- On iOS 16 and 17, tapping the mini player now opens the full-screen Now Playing page with a bottom slide-up transition
+- 推荐页卡片改为值驱动导航；打开每日推荐、歌单、专辑或歌手后再切换侧边栏，可以正确进入所选页面
+- iOS 16 和 17 上点击迷你播放器现在可以通过底部上滑动画正常打开全屏播放页
+
 ## 1.1.1 - 2026-08-26
 
 ### Fixed / 修复
