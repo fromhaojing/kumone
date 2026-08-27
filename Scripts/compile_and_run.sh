@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CONF="${1:-debug}"
 APP_NAME="听澜"
-EXECUTABLE_NAME="Kumone"
+EXECUTABLE_NAME="Tinglan"
 APP_BUNDLE="$ROOT/.build/app/$APP_NAME.app"
 
 # Kill running instances

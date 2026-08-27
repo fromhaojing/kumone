@@ -6,7 +6,7 @@
 // ==========================================
 // Project Identity
 // ==========================================
-PRODUCT_NAME = KumoneIOS
+PRODUCT_NAME = TinglanIOS
 PRODUCT_BUNDLE_IDENTIFIER = com.fromhaojing.tinglan.ios
 // PRODUCT_DISPLAY_NAME is not a real build setting; the Home Screen
 // name comes from CFBundleDisplayName.
@@ -40,5 +40,5 @@ INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationLand
 // ==========================================
 // Entitlements
 // ==========================================
-// AI agents can modify Config/KumoneIOS.entitlements to add capabilities
-CODE_SIGN_ENTITLEMENTS = Config/KumoneIOS.entitlements
+// AI agents can modify Config/TinglanIOS.entitlements to add capabilities
+CODE_SIGN_ENTITLEMENTS = Config/TinglanIOS.entitlements

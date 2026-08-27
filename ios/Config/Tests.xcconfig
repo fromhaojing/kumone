@@ -8,7 +8,7 @@
 // Test Target Settings (Customizable by scaffold tool)
 // ==========================================
 PRODUCT_BUNDLE_IDENTIFIER = com.fromhaojing.tinglan.ios.uitests
-TEST_TARGET_NAME = KumoneIOS
+TEST_TARGET_NAME = TinglanIOS
 
 // Fix duplicate module name issue
 PRODUCT_MODULE_NAME = $(PRODUCT_NAME)UITests

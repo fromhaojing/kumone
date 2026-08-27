@@ -1,4 +1,4 @@
-# KumoneIOS - iOS App
+# TinglanIOS - iOS App
 
 A modern iOS application using a **workspace + SPM package** architecture for clean separation between app shell and feature code.
 
@@ -30,25 +30,25 @@ These rules files are **starting points** - feel free to:
 ## Project Architecture
 
 ```
-KumoneIOS/
-├── KumoneIOS.xcworkspace/              # Open this file in Xcode
-├── KumoneIOS.xcodeproj/                # App shell project
-├── KumoneIOS/                          # App target (minimal)
+TinglanIOS/
+├── TinglanIOS.xcworkspace/              # Open this file in Xcode
+├── TinglanIOS.xcodeproj/                # App shell project
+├── TinglanIOS/                          # App target (minimal)
 │   ├── Assets.xcassets/                # App-level assets (icons, colors)
-│   ├── KumoneIOSApp.swift              # App entry point
-│   └── KumoneIOS.xctestplan            # Test configuration
-├── KumoneIOSPackage/                   # 🚀 Primary development area
+│   ├── TinglanIOSApp.swift              # App entry point
+│   └── TinglanIOS.xctestplan            # Test configuration
+├── TinglanIOSPackage/                   # 🚀 Primary development area
 │   ├── Package.swift                   # Package configuration
-│   ├── Sources/KumoneIOSFeature/       # Your feature code
-│   └── Tests/KumoneIOSFeatureTests/    # Unit tests
-└── KumoneIOSUITests/                   # UI automation tests
+│   ├── Sources/TinglanIOSFeature/       # Your feature code
+│   └── Tests/TinglanIOSFeatureTests/    # Unit tests
+└── TinglanIOSUITests/                   # UI automation tests
 ```
 
 ## Key Architecture Points
 
 ### Workspace + SPM Structure
-- **App Shell**: `KumoneIOS/` contains minimal app lifecycle code
-- **Feature Code**: `KumoneIOSPackage/Sources/KumoneIOSFeature/` is where most development happens
+- **App Shell**: `TinglanIOS/` contains minimal app lifecycle code
+- **Feature Code**: `TinglanIOSPackage/Sources/TinglanIOSFeature/` is where most development happens
 - **Separation**: Business logic lives in the SPM package, app target just imports and displays it
 
 ### Buildable Folders (Xcode 16)
@@ -59,7 +59,7 @@ KumoneIOS/
 ## Development Notes
 
 ### Code Organization
-Most development happens in `KumoneIOSPackage/Sources/KumoneIOSFeature/` - organize your code as you prefer.
+Most development happens in `TinglanIOSPackage/Sources/TinglanIOSFeature/` - organize your code as you prefer.
 
 ### Public API Requirements
 Types exposed to the app target need `public` access:
@@ -74,23 +74,23 @@ public struct NewView: View {
 ```
 
 ### Adding Dependencies
-Edit `KumoneIOSPackage/Package.swift` to add SPM dependencies:
+Edit `TinglanIOSPackage/Package.swift` to add SPM dependencies:
 ```swift
 dependencies: [
     .package(url: "https://github.com/example/SomePackage", from: "1.0.0")
 ],
 targets: [
     .target(
-        name: "KumoneIOSFeature",
+        name: "TinglanIOSFeature",
         dependencies: ["SomePackage"]
     ),
 ]
 ```
 
 ### Test Structure
-- **Unit Tests**: `KumoneIOSPackage/Tests/KumoneIOSFeatureTests/` (Swift Testing framework)
-- **UI Tests**: `KumoneIOSUITests/` (XCUITest framework)
-- **Test Plan**: `KumoneIOS.xctestplan` coordinates all tests
+- **Unit Tests**: `TinglanIOSPackage/Tests/TinglanIOSFeatureTests/` (Swift Testing framework)
+- **UI Tests**: `TinglanIOSUITests/` (XCUITest framework)
+- **Test Plan**: `TinglanIOS.xctestplan` coordinates all tests
 
 ## Configuration
 
@@ -103,19 +103,19 @@ Build settings are managed through **XCConfig files** in `Config/`:
 
 ### Entitlements Management
 App capabilities are managed through a **declarative entitlements file**:
-- `Config/KumoneIOS.entitlements` - All app entitlements and capabilities
+- `Config/TinglanIOS.entitlements` - All app entitlements and capabilities
 - AI agents can safely edit this XML file to add HealthKit, CloudKit, Push Notifications, etc.
 - No need to modify complex Xcode project files
 
 ### Asset Management
-- **App-Level Assets**: `KumoneIOS/Assets.xcassets/` (app icon, accent color)
+- **App-Level Assets**: `TinglanIOS/Assets.xcassets/` (app icon, accent color)
 - **Feature Assets**: Add `Resources/` folder to SPM package if needed
 
 ### SPM Package Resources
 To include assets in your feature package:
 ```swift
 .target(
-    name: "KumoneIOSFeature",
+    name: "TinglanIOSFeature",
     dependencies: [],
     resources: [.process("Resources")]
 )

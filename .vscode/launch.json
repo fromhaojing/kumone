@@ -4,21 +4,21 @@
       "type": "swift",
       "request": "launch",
       "args": [],
-      "cwd": "${workspaceFolder:kumone}",
-      "name": "Debug Kumone",
-      "target": "Kumone",
+      "cwd": "${workspaceFolder:tinglan}",
+      "name": "Debug Tinglan",
+      "target": "Tinglan",
       "configuration": "debug",
-      "preLaunchTask": "swift: Build Debug Kumone"
+      "preLaunchTask": "swift: Build Debug Tinglan"
     },
     {
       "type": "swift",
       "request": "launch",
       "args": [],
-      "cwd": "${workspaceFolder:kumone}",
-      "name": "Release Kumone",
-      "target": "Kumone",
+      "cwd": "${workspaceFolder:tinglan}",
+      "name": "Release Tinglan",
+      "target": "Tinglan",
       "configuration": "release",
-      "preLaunchTask": "swift: Build Release Kumone"
+      "preLaunchTask": "swift: Build Release Tinglan"
     }
   ]
 }

@@ -2,35 +2,35 @@
 import PackageDescription
 
 let package = Package(
-    name: "Kumone",
+    name: "Tinglan",
     defaultLocalization: "zh-Hans",
     platforms: [.macOS("15.0"), .iOS("16.0")],
     products: [
-        .executable(name: "Kumone", targets: ["KumoneLauncher"]),
-        .library(name: "KumoneCore", targets: ["KumoneCore"]),
+        .executable(name: "Tinglan", targets: ["TinglanLauncher"]),
+        .library(name: "TinglanCore", targets: ["TinglanCore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.9.5"),
     ],
     targets: [
         .target(
-            name: "KumoneCore",
+            name: "TinglanCore",
             dependencies: [
                 .product(name: "Sparkle", package: "Sparkle", condition: .when(platforms: [.macOS])),
             ],
-            path: "Sources/Kumone",
+            path: "Sources/Tinglan",
             exclude: ["Resources"],
             swiftSettings: [
                 .swiftLanguageMode(.v5),
             ]
         ),
         .executableTarget(
-            name: "KumoneLauncher",
+            name: "TinglanLauncher",
             dependencies: [
-                "KumoneCore",
+                "TinglanCore",
                 .product(name: "Sparkle", package: "Sparkle", condition: .when(platforms: [.macOS])),
             ],
-            path: "Sources/KumoneLauncher",
+            path: "Sources/TinglanLauncher",
             swiftSettings: [
                 .swiftLanguageMode(.v5),
             ],

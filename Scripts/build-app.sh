@@ -8,8 +8,8 @@ ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT"
 
 CONF="${1:-debug}"
-PRODUCT_NAME="Kumone"
-EXECUTABLE_NAME="Kumone"
+PRODUCT_NAME="Tinglan"
+EXECUTABLE_NAME="Tinglan"
 APP_NAME="${APP_NAME:-听澜}"
 BUNDLE_ID="com.fromhaojing.tinglan"
 # Version resolution: environment > version.env > defaults.
@@ -54,7 +54,7 @@ mkdir -p "$APP_BUNDLE/Contents/Frameworks"
 cp -a "$SPARKLE_FW" "$APP_BUNDLE/Contents/Frameworks/"
 
 # Localization tables → Bundle.main
-for lproj in "$ROOT"/Sources/Kumone/Resources/*.lproj; do
+for lproj in "$ROOT"/Sources/Tinglan/Resources/*.lproj; do
   [ -d "$lproj" ] && cp -R "$lproj" "$APP_BUNDLE/Contents/Resources/"
 done
 
@@ -125,7 +125,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
     <dict>
         <key>NSAllowsArbitraryLoads</key><true/>
     </dict>
-    <key>KumoneGitCommit</key><string>$GIT_COMMIT</string>
+    <key>TinglanGitCommit</key><string>$GIT_COMMIT</string>
     <key>SUFeedURL</key><string>$SPARKLE_FEED_URL</string>
     <key>SUPublicEDKey</key><string>$SPARKLE_PUBLIC_ED_KEY</string>
     <key>SUEnableAutomaticChecks</key><true/>

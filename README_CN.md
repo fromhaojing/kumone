@@ -25,6 +25,6 @@
   </tr>
 </table>
 
-本项目 Fork 自 [missuo/kumone](https://github.com/missuo/kumone)。
+本项目的 Fork 来源说明见 [README.md](README.md)。
 
 </div>

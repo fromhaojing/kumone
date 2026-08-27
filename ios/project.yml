@@ -1,6 +1,6 @@
 # XcodeGen manifest for the iOS app shell.
 # Regenerate the project with: cd ios && xcodegen generate
-name: KumoneIOS
+name: TinglanIOS
 options:
   deploymentTarget:
     iOS: "16.0"
@@ -9,44 +9,44 @@ configFiles:
   Debug: Config/Debug.xcconfig
   Release: Config/Release.xcconfig
 packages:
-  KumoneIOSPackage:
-    path: KumoneIOSPackage
+  TinglanIOSPackage:
+    path: TinglanIOSPackage
 targets:
-  KumoneIOS:
+  TinglanIOS:
     type: application
     platform: iOS
     sources:
-      - KumoneIOS
+      - TinglanIOS
     configFiles:
       Debug: Config/Debug.xcconfig
       Release: Config/Release.xcconfig
     dependencies:
-      - package: KumoneIOSPackage
-        product: KumoneIOSFeature
+      - package: TinglanIOSPackage
+        product: TinglanIOSFeature
     settings:
       base:
-        CODE_SIGN_ENTITLEMENTS: Config/KumoneIOS.entitlements
+        CODE_SIGN_ENTITLEMENTS: Config/TinglanIOS.entitlements
         ENABLE_PREVIEWS: YES
-  KumoneIOSUITests:
+  TinglanIOSUITests:
     type: bundle.ui-testing
     platform: iOS
     sources:
-      - KumoneIOSUITests
+      - TinglanIOSUITests
     configFiles:
       Debug: Config/Tests.xcconfig
       Release: Config/Tests.xcconfig
     dependencies:
-      - target: KumoneIOS
+      - target: TinglanIOS
 schemes:
-  KumoneIOS:
+  TinglanIOS:
     build:
       targets:
-        KumoneIOS: all
+        TinglanIOS: all
     run:
       config: Debug
     test:
       config: Debug
       targets:
-        - KumoneIOSUITests
+        - TinglanIOSUITests
     archive:
       config: Release

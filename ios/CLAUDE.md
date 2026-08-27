@@ -408,13 +408,13 @@ This template includes a **declarative entitlements system** that AI agents can 
 
 ## How It Works
 
-- **Entitlements File**: `Config/KumoneIOS.entitlements` contains all app capabilities
+- **Entitlements File**: `Config/TinglanIOS.entitlements` contains all app capabilities
 - **XCConfig Integration**: `CODE_SIGN_ENTITLEMENTS` setting in `Config/Shared.xcconfig` points to the entitlements file
 - **AI-Friendly**: Agents can edit the XML file directly to add/remove capabilities
 
 ## Adding Entitlements
 
-To add capabilities to your app, edit `Config/KumoneIOS.entitlements`:
+To add capabilities to your app, edit `Config/TinglanIOS.entitlements`:
 
 ## Common Entitlements
 
@@ -698,7 +698,7 @@ final class Task {
 
 // In your app
 @main
-struct KumoneIOSApp: App {
+struct TinglanIOSApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
