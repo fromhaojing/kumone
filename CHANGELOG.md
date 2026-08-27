@@ -6,6 +6,13 @@
 section the English bullets come first, followed by their Simplified Chinese
 counterparts. 段落格式：`## <版本号> - <日期>`，条目必须写成单行。
 
+## 1.1.3 - 2026-08-27
+
+### Improved / 改进
+
+- On macOS, titles and the search field now fade continuously with scrolling across Home, Explore, library, search, and detail pages, preventing content from overlapping the transparent toolbar
+- macOS 上推荐、精选、音乐库、搜索及详情页面的标题和搜索框现在会随滚动距离连续渐隐，避免内容与透明工具栏重叠
+
 ## 1.1.2 - 2026-08-26
 
 ### Fixed / 修复

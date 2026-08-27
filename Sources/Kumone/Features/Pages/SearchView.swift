@@ -114,6 +114,7 @@ struct SearchView: View {
                 PlayerClearanceSpacer()
             }
         }
+        .tracksMacToolbarVisibility()
         .modifier(SearchFieldModifier(
             text: searchTextBinding,
             isEnabled: externalSearchText == nil
@@ -131,7 +132,9 @@ struct SearchView: View {
                 }
             }
         }
-        .navigationTitle(model.query.isEmpty ? "搜索" : String(localized: "搜索：\(model.query)"))
+        .scrollAwareNavigationTitle(Text(
+            model.query.isEmpty ? String(localized: "搜索") : String(localized: "搜索：\(model.query)")
+        ))
         .task(id: model.tab) {
             await model.load(tab: model.tab)
         }

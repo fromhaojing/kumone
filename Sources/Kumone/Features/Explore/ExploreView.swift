@@ -123,7 +123,8 @@ struct ExploreView: View {
                 PlayerClearanceSpacer()
             }
         }
-        .navigationTitle("精选")
+        .tracksMacToolbarVisibility()
+        .scrollAwareNavigationTitle(Text("精选"))
         .task {
             if model.playlists.isEmpty, model.toplists.isEmpty {
                 await model.loadMore()
@@ -220,7 +221,8 @@ struct ToplistsView: View {
                 PlayerClearanceSpacer()
             }
         }
-        .navigationTitle("排行榜")
+        .tracksMacToolbarVisibility()
+        .scrollAwareNavigationTitle(Text("排行榜"))
         .task {
             if toplists.isEmpty {
                 toplists = (try? await NeteaseAPI.toplists()) ?? []

@@ -122,7 +122,8 @@ struct HomeView: View {
                 loadedBody
             }
         }
-        .navigationTitle("推荐")
+        .tracksMacToolbarVisibility()
+        .scrollAwareNavigationTitle(Text("推荐"))
         .task(id: account.isLoggedIn) {
             await model.load(loggedIn: account.isLoggedIn)
         }

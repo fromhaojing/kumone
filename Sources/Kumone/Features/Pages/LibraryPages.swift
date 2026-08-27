@@ -53,7 +53,8 @@ struct RecentsView: View {
                 PlayerClearanceSpacer()
             }
         }
-        .navigationTitle("最近播放")
+        .tracksMacToolbarVisibility()
+        .scrollAwareNavigationTitle(Text("最近播放"))
         .task(id: week) {
             await load()
         }
@@ -135,7 +136,8 @@ struct CloudView: View {
                 PlayerClearanceSpacer()
             }
         }
-        .navigationTitle("音乐云盘")
+        .tracksMacToolbarVisibility()
+        .scrollAwareNavigationTitle(Text("音乐云盘"))
         .task {
             if items.isEmpty {
                 await load()

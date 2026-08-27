@@ -82,7 +82,8 @@ struct CollectionsView: View {
                 PlayerClearanceSpacer()
             }
         }
-        .navigationTitle("我的收藏")
+        .tracksMacToolbarVisibility()
+        .scrollAwareNavigationTitle(Text("我的收藏"))
         .task {
             await account.refreshSublists()
             isLoading = false

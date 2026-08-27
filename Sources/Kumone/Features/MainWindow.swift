@@ -22,6 +22,7 @@ struct MainWindow: View {
     #if os(macOS)
     @State private var isSidebarCollapsed = false
     @State private var sidebarCollapsedBeforeNowPlaying: Bool?
+    @State private var toolbarScrollProgress: CGFloat = 0
     #endif
 
     var body: some View {
@@ -36,6 +37,8 @@ struct MainWindow: View {
                         onSubmit: submitSearch
                     )
                     .frame(width: 320)
+                    .opacity(1 - toolbarScrollProgress)
+                    .allowsHitTesting(toolbarScrollProgress < 1)
                 }
                 .sharedBackgroundVisibility(.hidden)
             } else {
@@ -46,6 +49,8 @@ struct MainWindow: View {
                         onSubmit: submitSearch
                     )
                     .frame(width: 320)
+                    .opacity(1 - toolbarScrollProgress)
+                    .allowsHitTesting(toolbarScrollProgress < 1)
                 }
             }
         }
@@ -150,6 +155,7 @@ struct MainWindow: View {
             .environmentObject(settings)
             .environmentObject(toasts)
             .environment(\.openLogin, { showLogin = true })
+            .environment(\.macToolbarScrollProgressBinding, $toolbarScrollProgress)
             .tint(Theme.accent)
             .preferredColorScheme(settings.appearance.colorScheme)
             .focusEffectDisabled()
@@ -180,6 +186,9 @@ struct MainWindow: View {
         }
         .onChange(of: selection) { _ in
             path = NavigationPath()
+            #if os(macOS)
+            toolbarScrollProgress = 0
+            #endif
             if hasSearchDestination {
                 searchText = ""
                 hasSearchDestination = false

@@ -34,7 +34,8 @@ struct DailySongsView: View {
                 PlayerClearanceSpacer()
             }
         }
-        .navigationTitle("每日推荐")
+        .tracksMacToolbarVisibility()
+        .scrollAwareNavigationTitle(Text("每日推荐"))
         .task {
             if tracks.isEmpty {
                 await load()

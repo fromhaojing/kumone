@@ -16,7 +16,7 @@ struct FMView: View {
                 loginPrompt
             }
         }
-        .navigationTitle("漫游")
+        .scrollAwareNavigationTitle(Text("漫游"))
         .compatHiddenToolbarBackground()
     }
 

@@ -118,8 +118,9 @@ struct ArtistDetailView: View {
                 PlayerClearanceSpacer()
             }
         }
+        .tracksMacToolbarVisibility()
         #if os(macOS)
-        .navigationTitle(artist?.name ?? String(localized: "歌手"))
+        .scrollAwareNavigationTitle(Text(artist?.name ?? String(localized: "歌手")))
         #else
         .navigationBarTitleDisplayMode(.inline)
         #endif

@@ -1,5 +1,78 @@
 import SwiftUI
 
+private struct MacToolbarScrollProgressBindingKey: EnvironmentKey {
+    static var defaultValue: Binding<CGFloat> { .constant(0) }
+}
+
+extension EnvironmentValues {
+    var macToolbarScrollProgressBinding: Binding<CGFloat> {
+        get { self[MacToolbarScrollProgressBindingKey.self] }
+        set { self[MacToolbarScrollProgressBindingKey.self] = newValue }
+    }
+}
+
+private struct MacToolbarScrollVisibilityModifier: ViewModifier {
+    @Environment(\.macToolbarScrollProgressBinding) private var progress
+
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        content
+            .onScrollGeometryChange(
+                for: CGFloat.self,
+                of: { geometry in
+                    let distance = geometry.contentOffset.y - geometry.contentInsets.top
+                    return min(max(distance / 48, 0), 1)
+                },
+                action: { _, newProgress in
+                    guard abs(progress.wrappedValue - newProgress) > 0.001 else { return }
+                    progress.wrappedValue = newProgress
+                }
+            )
+            .onDisappear {
+                guard progress.wrappedValue != 0 else { return }
+                progress.wrappedValue = 0
+            }
+        #else
+        content
+        #endif
+    }
+}
+
+private struct ScrollAwareNavigationTitleModifier: ViewModifier {
+    let title: Text
+    @Environment(\.macToolbarScrollProgressBinding) private var progress
+
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        content
+            .navigationTitle("")
+            .toolbar {
+                if #available(macOS 26.0, *) {
+                    ToolbarItem(placement: .navigation) {
+                        toolbarTitle
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                } else {
+                    ToolbarItem(placement: .navigation) {
+                        toolbarTitle
+                    }
+                }
+            }
+        #else
+        content.navigationTitle(title)
+        #endif
+    }
+
+    #if os(macOS)
+    private var toolbarTitle: some View {
+        title
+            .font(.headline)
+            .opacity(1 - progress.wrappedValue)
+            .accessibilityHidden(progress.wrappedValue >= 1)
+    }
+    #endif
+}
+
 /// Design tokens: color, radius, spacing, layout metrics.
 enum Theme {
     /// NetEase red, tuned slightly warmer for macOS.
@@ -66,6 +139,16 @@ enum AppAnimation {
 }
 
 extension View {
+    /// Hides the macOS detail title and search field once vertical content
+    /// starts moving underneath the transparent window toolbar.
+    func tracksMacToolbarVisibility() -> some View {
+        modifier(MacToolbarScrollVisibilityModifier())
+    }
+
+    func scrollAwareNavigationTitle(_ title: Text) -> some View {
+        modifier(ScrollAwareNavigationTitleModifier(title: title))
+    }
+
     /// `scrollClipDisabled` is iOS 17 / macOS 14; older systems clip normally.
     @ViewBuilder
     func compatScrollClipDisabled() -> some View {

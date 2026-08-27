@@ -136,8 +136,9 @@ struct PlaylistDetailView: View {
                 PlayerClearanceSpacer()
             }
         }
+        .tracksMacToolbarVisibility()
         #if os(macOS)
-        .navigationTitle(model.detail?.name ?? String(localized: "歌单"))
+        .scrollAwareNavigationTitle(Text(model.detail?.name ?? String(localized: "歌单")))
         #else
         .navigationBarTitleDisplayMode(.inline)
         #endif

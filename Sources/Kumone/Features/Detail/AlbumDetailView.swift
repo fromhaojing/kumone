@@ -78,8 +78,9 @@ struct AlbumDetailView: View {
                 PlayerClearanceSpacer()
             }
         }
+        .tracksMacToolbarVisibility()
         #if os(macOS)
-        .navigationTitle(album?.name ?? String(localized: "专辑"))
+        .scrollAwareNavigationTitle(Text(album?.name ?? String(localized: "专辑")))
         #else
         .navigationBarTitleDisplayMode(.inline)
         #endif
