@@ -6,6 +6,25 @@
 section the English bullets come first, followed by their Simplified Chinese
 counterparts. 段落格式：`## <版本号> - <日期>`，条目必须写成单行。
 
+## 1.2.0 - 2026-08-31
+
+### Added / 新增
+
+- Added a retro vinyl now-playing mode, real audio-spectrum playing indicators, Japanese furigana, and word-by-word karaoke lyrics
+- 新增黑胶唱片播放模式、真实音频频谱播放指示、日文振假名和逐字卡拉 OK 歌词
+- Added automatic update-check and horizontally centered desktop-lyrics options
+- 新增启动时自动检查更新和桌面歌词水平居中选项
+
+### Fixed / 修复
+
+- Fixed reopening the single main window from the Dock and corrected the desktop-lyrics button state
+- 修复从 Dock 重新打开单一主窗口以及桌面歌词按钮状态显示
+
+### Improved / 改进
+
+- Reduced idle interface redraws and improved artwork caching, lyric rendering, playback reporting, and gray-track fallback behavior
+- 减少界面空闲时的重复刷新，并改进封面缓存、歌词渲染、播放记录和灰色歌曲回退行为
+
 ## 1.1.4 - 2026-08-27
 
 ### Improved / 改进
