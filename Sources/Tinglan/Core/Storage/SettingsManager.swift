@@ -52,21 +52,40 @@ enum AppAppearance: String, CaseIterable, Identifiable {
     }
 }
 
-#if os(iOS)
-enum NowPlayingMode: String, CaseIterable, Identifiable {
-    case classic
-    case immersive
+/// What to show above Japanese lyrics.
+enum LyricsAnnotation: String, CaseIterable, Identifiable {
+    case off
+    case romaji
+    case furigana
 
     var id: String { rawValue }
 
     var displayName: String {
         switch self {
-        case .classic: return String(localized: "经典模式")
-        case .immersive: return String(localized: "沉浸模式")
+        case .off: return String(localized: "关闭")
+        case .romaji: return String(localized: "罗马音")
+        case .furigana: return String(localized: "汉字读音")
         }
     }
 }
-#endif
+
+public enum NowPlayingMode: String, CaseIterable, Identifiable {
+    case vinyl
+    case classic
+    case immersive
+    case minimal
+
+    public var id: String { rawValue }
+
+    public var displayName: String {
+        switch self {
+        case .vinyl: return String(localized: "黑胶模式")
+        case .classic: return String(localized: "经典模式")
+        case .immersive: return String(localized: "沉浸模式")
+        case .minimal: return String(localized: "简洁模式")
+        }
+    }
+}
 
 @MainActor
 final class SettingsManager: ObservableObject {
@@ -75,15 +94,17 @@ final class SettingsManager: ObservableObject {
     private enum Keys {
         static let quality = "settings.audioQuality"
         static let appearance = "settings.appearance"
-        #if os(iOS)
         static let nowPlayingMode = "settings.nowPlayingMode"
-        #endif
         static let showTranslation = "settings.showLyricsTranslation"
-        static let showRomaji = "settings.showLyricsRomaji"
+        static let showRomaji = "settings.showLyricsRomaji"  // migrated to `annotation`
+        static let annotation = "settings.lyricsAnnotation"
+        static let verbatimLyrics = "settings.verbatimLyrics"
         static let volume = "settings.volume"
         static let fmMode = "settings.fmMode"
         static let unblock = "settings.enableUnblock"
+        static let autoCheckUpdates = "settings.autoCheckUpdates"
         static let desktopLyrics = "settings.showDesktopLyrics"
+        static let desktopLyricsCentered = "settings.desktopLyricsCentered"
     }
 
     @Published var audioQuality: AudioQuality {
@@ -94,19 +115,35 @@ final class SettingsManager: ObservableObject {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: Keys.appearance) }
     }
 
-    #if os(iOS)
     @Published var nowPlayingMode: NowPlayingMode {
         didSet { UserDefaults.standard.set(nowPlayingMode.rawValue, forKey: Keys.nowPlayingMode) }
     }
-    #endif
 
     @Published var showLyricsTranslation: Bool {
         didSet { UserDefaults.standard.set(showLyricsTranslation, forKey: Keys.showTranslation) }
     }
 
-    /// Romaji line above Japanese lyrics.
-    @Published var showLyricsRomaji: Bool {
-        didSet { UserDefaults.standard.set(showLyricsRomaji, forKey: Keys.showRomaji) }
+    /// Check for updates on launch. When off, no update sheet appears
+    /// automatically; the user can still check manually (#42).
+    @Published var autoCheckUpdates: Bool {
+        didSet {
+            UserDefaults.standard.set(autoCheckUpdates, forKey: Keys.autoCheckUpdates)
+            #if os(macOS)
+            UpdaterManager.shared.setAutomaticChecks(autoCheckUpdates)
+            #endif
+        }
+    }
+
+    /// Reading shown for Japanese lyrics: a romaji line above, furigana over
+    /// the kanji, or nothing.
+    @Published var lyricsAnnotation: LyricsAnnotation {
+        didSet { UserDefaults.standard.set(lyricsAnnotation.rawValue, forKey: Keys.annotation) }
+    }
+
+    /// Karaoke-style word-by-word highlighting when the song has verbatim
+    /// (yrc) lyrics; falls back to line highlighting when it doesn't.
+    @Published var verbatimLyrics: Bool {
+        didSet { UserDefaults.standard.set(verbatimLyrics, forKey: Keys.verbatimLyrics) }
     }
 
     /// Resolve gray tracks from third-party sources (UnblockNeteaseMusic-style).
@@ -119,16 +156,25 @@ final class SettingsManager: ObservableObject {
         didSet { UserDefaults.standard.set(showDesktopLyrics, forKey: Keys.desktopLyrics) }
     }
 
+    /// Lock the desktop-lyrics capsule to the horizontal centre of the screen
+    /// instead of the free-drag position (#48).
+    @Published var desktopLyricsCentered: Bool {
+        didSet { UserDefaults.standard.set(desktopLyricsCentered, forKey: Keys.desktopLyricsCentered) }
+    }
+
     private init() {
         let defaults = UserDefaults.standard
         audioQuality = defaults.string(forKey: Keys.quality).flatMap(AudioQuality.init) ?? .exhigh
         appearance = defaults.string(forKey: Keys.appearance).flatMap(AppAppearance.init) ?? .auto
-        #if os(iOS)
         nowPlayingMode = defaults.string(forKey: Keys.nowPlayingMode).flatMap(NowPlayingMode.init) ?? .immersive
-        #endif
         showLyricsTranslation = defaults.object(forKey: Keys.showTranslation) as? Bool ?? true
-        showLyricsRomaji = defaults.object(forKey: Keys.showRomaji) as? Bool ?? false
+        // Carry over the old on/off romaji toggle for anyone who had it on.
+        lyricsAnnotation = defaults.string(forKey: Keys.annotation).flatMap(LyricsAnnotation.init)
+            ?? (defaults.bool(forKey: Keys.showRomaji) ? .romaji : .off)
+        verbatimLyrics = defaults.object(forKey: Keys.verbatimLyrics) as? Bool ?? true
         enableUnblock = defaults.object(forKey: Keys.unblock) as? Bool ?? true
+        autoCheckUpdates = defaults.object(forKey: Keys.autoCheckUpdates) as? Bool ?? true
         showDesktopLyrics = defaults.object(forKey: Keys.desktopLyrics) as? Bool ?? false
+        desktopLyricsCentered = defaults.object(forKey: Keys.desktopLyricsCentered) as? Bool ?? false
     }
 }

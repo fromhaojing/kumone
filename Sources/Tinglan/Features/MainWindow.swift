@@ -4,6 +4,9 @@ import AppKit
 #endif
 
 struct MainWindow: View {
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #endif
     @EnvironmentObject private var player: PlayerService
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var settings: SettingsManager
@@ -62,6 +65,11 @@ struct MainWindow: View {
         #endif
         .environment(\.openLogin, { showLogin = true })
         .task {
+            #if os(macOS)
+            // Recreate the single main scene when the user clicks the Dock
+            // icon after closing the window while the app remains alive.
+            AppDelegate.shared?.openMainWindow = { openWindow(id: "main") }
+            #endif
             DesktopLyricsController.shared.sync(with: settings.showDesktopLyrics)
             await account.bootstrap()
         }

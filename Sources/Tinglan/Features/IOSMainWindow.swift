@@ -8,6 +8,13 @@ public struct IOSMainWindow: View {
     @StateObject private var toasts = ToastCenter.shared
     @StateObject private var updater = IOSUpdater.shared
     @Namespace private var nowPlayingTransition
+    @Environment(\.colorScheme) private var systemColorScheme
+
+    /// The app's intended scheme, read on this ancestor so the search-active
+    /// tab environment can't invert it (#31).
+    private var resolvedColorScheme: ColorScheme {
+        settings.appearance.colorScheme ?? systemColorScheme
+    }
 
     @State private var selectedTab: IOSTab = .home
     @State private var showLogin = false
@@ -30,7 +37,9 @@ public struct IOSMainWindow: View {
             .environment(\.openLogin, { showLogin = true })
             .task {
                 await account.bootstrap()
-                IOSUpdater.shared.check(interactive: false)
+                if settings.autoCheckUpdates {
+                    IOSUpdater.shared.check(interactive: false)
+                }
             }
             .sheet(isPresented: $updater.showSheet) {
                 IOSUpdaterSheet()
@@ -152,19 +161,32 @@ public struct IOSMainWindow: View {
     @ViewBuilder
     private var tabInterface: some View {
         if #available(iOS 26.0, *) {
-            iOS26TabView
-                .tabBarMinimizeBehavior(.onScrollDown)
-                .tabViewBottomAccessory {
-                    if player.hasCurrentTrack {
-                        IOSMiniPlayerAccessory(
-                            transitionNamespace: nowPlayingTransition
-                        )
-                    }
-                }
-                .animation(AppAnimation.standard, value: player.hasCurrentTrack)
+            iOS26TabInterface
         } else {
             customTabInterface
         }
+    }
+
+    /// Attach the bottom mini-player accessory only when something is playing.
+    /// Leaving the modifier on with empty content still renders an empty,
+    /// translucent accessory platter above the tab bar when idle (#35), so we
+    /// apply it conditionally.
+    @available(iOS 26.0, *)
+    private var iOS26TabInterface: some View {
+        iOS26TabView
+            .tabBarMinimizeBehavior(.onScrollDown)
+            // Apply the accessory through a ViewModifier so the TabView keeps a
+            // single identity across the hasCurrentTrack toggle. An if/else here
+            // churns the TabView identity, which detaches the accessory's
+            // matchedTransitionSource and makes the now-playing zoom anchor at
+            // the screen centre (#57); not applying it when idle keeps the empty
+            // accessory platter gone (#35).
+            .modifier(MiniPlayerAccessoryModifier(
+                isActive: player.hasCurrentTrack,
+                transitionNamespace: nowPlayingTransition,
+                colorScheme: resolvedColorScheme
+            ))
+            .animation(AppAnimation.standard, value: player.hasCurrentTrack)
     }
 
     @available(iOS 26.0, *)
@@ -282,6 +304,27 @@ private enum NowPlayingTransitionID {
 }
 
 // MARK: - Mini player bar for iOS
+
+@available(iOS 26.0, *)
+private struct MiniPlayerAccessoryModifier: ViewModifier {
+    let isActive: Bool
+    let transitionNamespace: Namespace.ID
+    let colorScheme: ColorScheme
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isActive {
+            content.tabViewBottomAccessory {
+                IOSMiniPlayerAccessory(transitionNamespace: transitionNamespace)
+                    // Pin the scheme so the search-active tab environment
+                    // doesn't flip the bar's text to white (#31).
+                    .environment(\.colorScheme, colorScheme)
+            }
+        } else {
+            content
+        }
+    }
+}
 
 @available(iOS 26.0, *)
 private struct IOSMiniPlayerAccessory: View {

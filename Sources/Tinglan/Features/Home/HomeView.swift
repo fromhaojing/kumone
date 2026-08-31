@@ -154,7 +154,7 @@ struct HomeView: View {
             }
 
             if !model.recommendPlaylists.isEmpty {
-                Shelf(title: "推荐歌单") {
+                Shelf(title: "推荐歌单", rowHeight: Theme.Layout.coverShelfHeight) {
                     ForEach(Array(model.recommendPlaylists.prefix(12).enumerated()), id: \.element.id) { index, playlist in
                         playlistCard(playlist)
                             .staggeredAppearance(index: index, id: "home-rec-\(playlist.id)")
@@ -163,7 +163,7 @@ struct HomeView: View {
             }
 
             if !model.radarPlaylists.isEmpty {
-                Shelf(title: "雷达歌单") {
+                Shelf(title: "雷达歌单", rowHeight: Theme.Layout.coverShelfHeight) {
                     ForEach(model.radarPlaylists) { radar in
                         NavigationLink(value: Destination.playlist(radar.id)) {
                             CoverCardBody(
@@ -180,7 +180,7 @@ struct HomeView: View {
             }
 
             if !model.toplists.isEmpty {
-                Shelf(title: "排行榜", seeAll: nil) {
+                Shelf(title: "排行榜", seeAll: nil, rowHeight: Theme.Layout.coverShelfHeight) {
                     ForEach(model.toplists) { toplist in
                         NavigationLink(value: Destination.playlist(toplist.id)) {
                             toplistCard(toplist)
@@ -191,7 +191,7 @@ struct HomeView: View {
             }
 
             if !model.newAlbums.isEmpty {
-                Shelf(title: "新碟上架") {
+                Shelf(title: "新碟上架", rowHeight: Theme.Layout.coverShelfHeight) {
                     ForEach(model.newAlbums) { album in
                         albumCard(album)
                     }
@@ -199,7 +199,7 @@ struct HomeView: View {
             }
 
             if !model.topArtists.isEmpty {
-                Shelf(title: "推荐歌手") {
+                Shelf(title: "推荐歌手", rowHeight: Theme.Layout.artistShelfHeight) {
                     ForEach(model.topArtists) { artist in
                         artistCard(artist)
                     }
@@ -441,12 +441,12 @@ struct CoverCardBody: View {
     var onPlay: (() -> Void)?
 
     @State private var isHovering = false
+    @Environment(\.flexibleCardWidth) private var flexibleWidth
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .bottomLeading) {
-                CachedAsyncImage(url: coverURL)
-                    .frame(width: size, height: size)
+                artwork
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous)
@@ -462,26 +462,37 @@ struct CoverCardBody: View {
                         .padding(8)
                 }
             }
-            .frame(width: size, height: size)
 
             Text(title)
                 .font(.system(size: 13, weight: .medium))
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 .foregroundStyle(.primary)
-                .frame(maxWidth: size, alignment: .leading)
+                .frame(maxWidth: flexibleWidth ? .infinity : size, alignment: .leading)
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.system(size: 11))
                     .lineLimit(1)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: size, alignment: .leading)
+                    .frame(maxWidth: flexibleWidth ? .infinity : size, alignment: .leading)
             }
         }
-        .frame(width: size, alignment: .leading)
+        .frame(maxWidth: flexibleWidth ? .infinity : size, alignment: .leading)
         .contentShape(Rectangle())
         #if os(macOS)
         .onHover { isHovering = $0 }
         #endif
+    }
+
+    @ViewBuilder
+    private var artwork: some View {
+        if flexibleWidth {
+            CachedAsyncImage(url: coverURL)
+                .aspectRatio(1, contentMode: .fit)
+                .frame(maxWidth: .infinity)
+        } else {
+            CachedAsyncImage(url: coverURL)
+                .frame(width: size, height: size)
+        }
     }
 }

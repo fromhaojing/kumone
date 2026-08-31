@@ -90,6 +90,18 @@ struct Shelf<Content: View>: View {
     let title: LocalizedStringKey
     var seeAll: (() -> Void)?
     var spacing: CGFloat = 16
+    /// Height of one row of cards.
+    ///
+    /// Supplying it lets the shelf build its cards lazily, which matters more
+    /// than it sounds: a plain `HStack` instantiates every card in the shelf and
+    /// keeps it in the responder tree, so hit testing walks all of them on every
+    /// frame of a *vertical* scroll — including the ones scrolled off the side
+    /// and never seen. Measured at roughly half the cost of scrolling the home
+    /// page. It has to be stated rather than measured because a `LazyHStack`
+    /// reports no height until something has been scrolled into view, which
+    /// leaves the enclosing horizontal ScrollView with nothing to lay out
+    /// against and collapses the whole page.
+    var rowHeight: CGFloat?
     @ViewBuilder var content: () -> Content
 
     var body: some View {
@@ -97,32 +109,72 @@ struct Shelf<Content: View>: View {
             SectionHeader(title: title, action: seeAll)
                 .padding(.horizontal, Theme.Layout.contentInset)
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: spacing) {
-                    Color.clear.frame(width: max(0, Theme.Layout.contentInset - spacing), height: 1)
-                    content()
-                    Color.clear.frame(width: max(0, Theme.Layout.contentInset - spacing), height: 1)
-                }
-                .padding(.vertical, 6)
+                cards
+                    .padding(.vertical, 6)
             }
             .compatScrollClipDisabled()
+        }
+    }
+
+    private var edgeInset: some View {
+        Color.clear.frame(width: max(0, Theme.Layout.contentInset - spacing), height: 1)
+    }
+
+    @ViewBuilder
+    private var cards: some View {
+        if let rowHeight {
+            LazyHStack(alignment: .top, spacing: spacing) {
+                edgeInset
+                content()
+                edgeInset
+            }
+            .frame(height: rowHeight)
+        } else {
+            HStack(alignment: .top, spacing: spacing) {
+                edgeInset
+                content()
+                edgeInset
+            }
         }
     }
 }
 
 // MARK: - Adaptive card grid
 
+/// Set by `CardGrid` on compact iOS so cards fill their (even) column instead
+/// of staying a fixed 160pt — which on narrow iPhones only fit one per row.
+private struct FlexibleCardWidthKey: EnvironmentKey { static let defaultValue = false }
+extension EnvironmentValues {
+    var flexibleCardWidth: Bool {
+        get { self[FlexibleCardWidthKey.self] }
+        set { self[FlexibleCardWidthKey.self] = newValue }
+    }
+}
+
 struct CardGrid<Content: View>: View {
     var minWidth: CGFloat = Theme.Layout.cardSize
     @ViewBuilder var content: () -> Content
 
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private var isCompact: Bool { horizontalSizeClass == .compact }
+    #else
+    private var isCompact: Bool { false }
+    #endif
+
+    private var columns: [GridItem] {
+        isCompact
+            ? [GridItem(.flexible(), spacing: 16, alignment: .top),
+               GridItem(.flexible(), spacing: 16, alignment: .top)]
+            : [GridItem(.adaptive(minimum: minWidth, maximum: minWidth + 40),
+                        spacing: 20, alignment: .top)]
+    }
+
     var body: some View {
-        LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: minWidth, maximum: minWidth + 40),
-                               spacing: 20, alignment: .top)],
-            alignment: .leading, spacing: 24
-        ) {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: isCompact ? 20 : 24) {
             content()
         }
+        .environment(\.flexibleCardWidth, isCompact)
     }
 }
 

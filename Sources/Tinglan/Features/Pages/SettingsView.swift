@@ -28,20 +28,26 @@ struct SettingsView: View {
                         Text(appearance.displayName).tag(appearance)
                     }
                 }
-                #if os(iOS)
                 Picker("播放页模式", selection: $settings.nowPlayingMode) {
                     ForEach(NowPlayingMode.allCases) { mode in
                         Text(mode.displayName).tag(mode)
                     }
                 }
-                #endif
                 Toggle("显示歌词翻译", isOn: $settings.showLyricsTranslation)
-                Toggle("显示日文歌词罗马音", isOn: $settings.showLyricsRomaji)
-                Text("日文歌词上方显示罗马音，缺少官方罗马音时自动生成读音")
+                Toggle("逐字歌词（卡拉OK）", isOn: $settings.verbatimLyrics)
+                Picker("日文歌词读音", selection: $settings.lyricsAnnotation) {
+                    ForEach(LyricsAnnotation.allCases) { annotation in
+                        Text(annotation.displayName).tag(annotation)
+                    }
+                }
+                Text("罗马音在歌词上方另起一行，汉字读音把假名标在汉字正上方；缺少官方罗马音时自动生成读音")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 #if os(macOS)
                 Toggle("桌面歌词", isOn: $settings.showDesktopLyrics)
+                if settings.showDesktopLyrics {
+                    Toggle("桌面歌词水平居中", isOn: $settings.desktopLyricsCentered)
+                }
                 Text("在屏幕上悬浮显示当前歌词，可拖动调整位置")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -65,6 +71,13 @@ struct SettingsView: View {
                     Text("未登录")
                         .foregroundStyle(.secondary)
                 }
+            }
+
+            Section("更新") {
+                Toggle("启动时自动检查更新", isOn: $settings.autoCheckUpdates)
+                Text("关闭后启动不再自动弹出更新提示，仍可手动检查更新")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("关于") {

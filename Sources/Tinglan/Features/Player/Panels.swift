@@ -4,7 +4,7 @@ import SwiftUI
 
 struct LyricsPanel: View {
     @EnvironmentObject private var player: PlayerService
-    @ObservedObject private var clock = PlayerService.shared.clock
+    @ObservedObject private var lyricsCursor = PlayerService.shared.lyricsCursor
     @EnvironmentObject private var settings: SettingsManager
 
     @State private var activeIndex: Int?
@@ -69,14 +69,16 @@ struct LyricsPanel: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .onChange(of: clock.progress) { _ in
-                    let index = lyrics.activeIndex(at: clock.progress + 0.2)
+                .onChange(of: lyricsCursor.activeIndex) { index in
                     guard index != activeIndex else { return }
                     activeIndex = index
                     guard !isUserScrolling, let index else { return }
                     withAnimation(.spring(response: 0.7, dampingFraction: 0.85)) {
                         proxy.scrollTo(index, anchor: .center)
                     }
+                }
+                .onAppear {
+                    adoptCursor(proxy: proxy)
                 }
                 .onChange(of: player.currentTrack?.id) { _ in
                     activeIndex = nil
@@ -109,19 +111,38 @@ struct LyricsPanel: View {
         }
     }
 
+
+    /// Jump straight to the line the song is on. Used when the view appears,
+    /// where waiting for the next line change would leave the lyrics parked at
+    /// the top. Scrolling is deferred a turn: the list has not laid out yet
+    /// while `onAppear` runs, and `scrollTo` on an unlaid list does nothing.
+    private func adoptCursor(proxy: ScrollViewProxy) {
+        let index = lyricsCursor.activeIndex
+        activeIndex = index
+        guard let index else { return }
+        DispatchQueue.main.async {
+            proxy.scrollTo(index, anchor: .center)
+        }
+    }
+
     private func lyricLine(_ line: LyricLine, isActive: Bool) -> some View {
         Button {
             player.seek(to: line.time)
         } label: {
             VStack(alignment: .leading, spacing: 3) {
-                if settings.showLyricsRomaji, let romaji = line.romaji {
+                if settings.lyricsAnnotation == .romaji, let romaji = line.romaji {
                     Text(romaji)
                         .font(.system(size: isActive ? 12 : 11))
                         .foregroundStyle(isActive ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tertiary))
                 }
-                Text(line.text.isEmpty ? "♪" : line.text)
-                    .font(.system(size: isActive ? 16 : 14, weight: isActive ? .bold : .medium))
-                    .foregroundStyle(isActive ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+                LyricText(
+                    line: line,
+                    size: isActive ? 16 : 14,
+                    weight: isActive ? .bold : .medium,
+                    // Core Text needs a resolved colour, so the hierarchical
+                    // styles the other rows use are spelled out here.
+                    color: isActive ? .primary : .secondary
+                )
                 if settings.showLyricsTranslation, let translation = line.translation {
                     Text(translation)
                         .font(.system(size: isActive ? 13 : 12))
