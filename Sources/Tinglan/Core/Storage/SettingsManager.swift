@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 enum AudioQuality: String, CaseIterable, Identifiable {
     case standard
@@ -50,6 +53,16 @@ enum AppAppearance: String, CaseIterable, Identifiable {
         case .dark: return .dark
         }
     }
+
+    #if os(macOS)
+    var nsAppearance: NSAppearance? {
+        switch self {
+        case .auto: return nil
+        case .light: return NSAppearance(named: .aqua)
+        case .dark: return NSAppearance(named: .darkAqua)
+        }
+    }
+    #endif
 }
 
 /// What to show above Japanese lyrics.
@@ -112,7 +125,12 @@ final class SettingsManager: ObservableObject {
     }
 
     @Published var appearance: AppAppearance {
-        didSet { UserDefaults.standard.set(appearance.rawValue, forKey: Keys.appearance) }
+        didSet {
+            UserDefaults.standard.set(appearance.rawValue, forKey: Keys.appearance)
+            #if os(macOS)
+            NSApplication.shared.appearance = appearance.nsAppearance
+            #endif
+        }
     }
 
     @Published var nowPlayingMode: NowPlayingMode {
@@ -176,5 +194,8 @@ final class SettingsManager: ObservableObject {
         autoCheckUpdates = defaults.object(forKey: Keys.autoCheckUpdates) as? Bool ?? true
         showDesktopLyrics = defaults.object(forKey: Keys.desktopLyrics) as? Bool ?? false
         desktopLyricsCentered = defaults.object(forKey: Keys.desktopLyricsCentered) as? Bool ?? false
+        #if os(macOS)
+        NSApplication.shared.appearance = appearance.nsAppearance
+        #endif
     }
 }

@@ -6,6 +6,13 @@
 section the English bullets come first, followed by their Simplified Chinese
 counterparts. 段落格式：`## <版本号> - <日期>`，条目必须写成单行。
 
+## 1.2.1 - 2026-09-01
+
+### Fixed / 修复
+
+- Fixed inconsistent macOS appearance updates across the main window, sidebar materials, settings window, and immersive player when switching between Light, Dark, and Follow System
+- 修复 macOS 在浅色、深色与跟随系统之间切换时，主窗口、侧边栏材质、设置窗口和沉浸播放页外观不同步的问题
+
 ## 1.2.0 - 2026-08-31
 
 ### Added / 新增

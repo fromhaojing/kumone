@@ -19,7 +19,6 @@ public struct TinglanApp: App {
                 .environmentObject(settings)
                 .environmentObject(toasts)
                 .tint(Theme.accent)
-                .preferredColorScheme(settings.appearance.colorScheme)
                 .focusEffectDisabled()
                 .frame(minWidth: player.showNowPlaying
                            ? Theme.Layout.minWindowWidthSidebarCollapsed
@@ -79,7 +78,6 @@ public struct TinglanApp: App {
                 .environmentObject(account)
                 .environmentObject(settings)
                 .tint(Theme.accent)
-                .preferredColorScheme(settings.appearance.colorScheme)
                 .focusEffectDisabled()
         }
     }

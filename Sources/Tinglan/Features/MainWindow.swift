@@ -129,8 +129,7 @@ struct MainWindow: View {
         #if os(macOS)
         MacSplitView(
             isSidebarCollapsed: $isSidebarCollapsed,
-            sidebarWidth: Theme.Layout.sidebarWidth,
-            appearance: settings.appearance
+            sidebarWidth: Theme.Layout.sidebarWidth
         ) {
             hostedContent(
                 SidebarView(selection: $selection, showLogin: $showLogin)
@@ -165,7 +164,6 @@ struct MainWindow: View {
             .environment(\.openLogin, { showLogin = true })
             .environment(\.macToolbarScrollProgressBinding, $toolbarScrollProgress)
             .tint(Theme.accent)
-            .preferredColorScheme(settings.appearance.colorScheme)
             .focusEffectDisabled()
     }
     #endif
@@ -314,7 +312,6 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
     let sidebarController: SidebarMaterialController<Sidebar>
     let detailHost: NSHostingController<Detail>
     let sidebarItem: NSSplitViewItem
-    private var appAppearance: AppAppearance
 
     var sidebarHost: NSHostingController<Sidebar> {
         sidebarController.host
@@ -324,10 +321,8 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
         sidebar: Sidebar,
         detail: Detail,
         sidebarWidth: CGFloat,
-        appearance: AppAppearance,
         collapsed: Bool
     ) {
-        appAppearance = appearance
         sidebarController = SidebarMaterialController(rootView: sidebar)
         detailHost = NSHostingController(rootView: detail)
         detailHost.sizingOptions = []
@@ -371,12 +366,6 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
         sidebarItem.maximumThickness = width
     }
 
-    func setAppearance(_ appearance: AppAppearance) {
-        guard appAppearance != appearance else { return }
-        appAppearance = appearance
-        configureWindow()
-    }
-
     func setCollapsed(_ collapsed: Bool) {
         guard sidebarItem.isCollapsed != collapsed else { return }
         toggleSidebar(nil)
@@ -389,14 +378,6 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
         // native translucent background all the way to the top.
         window.styleMask.insert(.fullSizeContentView)
         window.titlebarAppearsTransparent = true
-        switch appAppearance {
-        case .auto:
-            window.appearance = nil
-        case .light:
-            window.appearance = NSAppearance(named: .aqua)
-        case .dark:
-            window.appearance = NSAppearance(named: .darkAqua)
-        }
     }
 
     func installToolbarItems() {
@@ -467,20 +448,17 @@ private final class HostedSplitController<Sidebar: View, Detail: View>: NSSplitV
 private struct MacSplitView<Sidebar: View, Detail: View>: NSViewControllerRepresentable {
     @Binding var isSidebarCollapsed: Bool
     let sidebarWidth: CGFloat
-    let appearance: AppAppearance
     let sidebar: Sidebar
     let detail: Detail
 
     init(
         isSidebarCollapsed: Binding<Bool>,
         sidebarWidth: CGFloat,
-        appearance: AppAppearance,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) {
         _isSidebarCollapsed = isSidebarCollapsed
         self.sidebarWidth = sidebarWidth
-        self.appearance = appearance
         self.sidebar = sidebar()
         self.detail = detail()
     }
@@ -496,7 +474,6 @@ private struct MacSplitView<Sidebar: View, Detail: View>: NSViewControllerRepres
             sidebar: sidebar,
             detail: detail,
             sidebarWidth: sidebarWidth,
-            appearance: appearance,
             collapsed: isSidebarCollapsed
         )
         context.coordinator.observe(controller)
@@ -511,7 +488,6 @@ private struct MacSplitView<Sidebar: View, Detail: View>: NSViewControllerRepres
         controller.sidebarHost.rootView = sidebar
         controller.detailHost.rootView = detail
         controller.setSidebarWidth(sidebarWidth)
-        controller.setAppearance(appearance)
         controller.setCollapsed(isSidebarCollapsed)
 
         DispatchQueue.main.async { [weak controller] in

@@ -88,7 +88,9 @@ struct NowPlayingView: View {
         // iOS keeps its safe area: there the inset is the status bar / notch.
         .ignoresSafeArea()
         #endif
-        .preferredColorScheme(.dark)
+        // Keep this immersive page dark without promoting the preference to
+        // the enclosing window and overriding the app-wide appearance.
+        .environment(\.colorScheme, .dark)
         .task(id: player.currentTrack?.id) {
             await loadArtwork()
         }
